@@ -2,7 +2,16 @@ import logging
 import os
 import unittest
 
-from bcncita import CustomerProfile, DocType, Office, OperationType, Province, try_cita
+from bcncita import (
+    CustomerProfile,
+    DocType,
+    Office,
+    OperationType,
+    Province,
+    init_wedriver,
+    start_with,
+    try_cita,
+)
 
 
 class TestBot(unittest.TestCase):
@@ -33,14 +42,21 @@ class TestBot(unittest.TestCase):
         self.assertIn("INFO:root:[Step 3/6] Contact info", logs.output)
         self.assertIn("INFO:root:[Step 4/6] Cita attempt -> selection hit!", logs.output)
 
+        driver = init_wedriver(customer)
         for province in Province:
             customer = CustomerProfile(
-                **params, province=province, operation_code=OperationType.TOMA_HUELLAS,
+                **params,
+                province=province,
+                operation_code=OperationType.TOMA_HUELLAS,
             )
             with self.assertLogs(None, level=logging.INFO) as logs:
-                try_cita(context=customer, cycles=1)
+                start_with(driver=driver, context=customer, cycles=1)
 
-            self.assertIn("INFO:root:Instructions page loaded", logs.output)
+            self.assertIn(
+                "INFO:root:Instructions page loaded",
+                logs.output,
+                msg=f"Can't load instructions for province={province}",
+            )
 
 
 if __name__ == "__main__":
