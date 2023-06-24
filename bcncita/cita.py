@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import io
+import traceback
 import json
 import logging
 import os
@@ -279,6 +280,7 @@ def start_with(driver: webdriver, context: CustomerProfile, cycles: int = CYCLES
     result = False
     for i in range(cycles):
         try:
+            time.sleep(60)
             logging.info(f"\033[33m[Attempt {i + 1}/{cycles}]\033[0m")
             result = cycle_cita(driver, context, fast_forward_url, fast_forward_url2)
         except KeyboardInterrupt:
@@ -286,6 +288,9 @@ def start_with(driver: webdriver, context: CustomerProfile, cycles: int = CYCLES
         except TimeoutException:
             logging.error("Timeout exception")
         except Exception as e:
+            trace = traceback.format_exc()
+            # do something with the trace, like log it to a file
+            print(trace)
             logging.error(f"SMTH BROKEN: {e}")
             continue
 
@@ -435,6 +440,7 @@ def certificados_step2(driver: webdriver, context: CustomerProfile):
 
 
 def autorizacion_de_regreso_step2(driver: webdriver, context: CustomerProfile):
+    print('entree 1')
     try:
         WebDriverWait(driver, DELAY).until(EC.presence_of_element_located((By.ID, "txtIdCitado")))
     except TimeoutException:
@@ -449,7 +455,7 @@ def autorizacion_de_regreso_step2(driver: webdriver, context: CustomerProfile):
 
     # Enter doc number, name and year of birth
     element = driver.find_element(By.ID, "txtIdCitado")
-    element.send_keys(context.doc_value, Keys.TAB, context.name, Keys.TAB, context.year_of_birth)
+    element.send_keys(context.doc_value, Keys.TAB, context.name, Keys.TAB)
 
     return True
 
@@ -752,7 +758,7 @@ def log_backoff(details):
 @backoff.on_exception(
     backoff.constant,
     TimeoutException,
-    interval=350,
+    interval=60,
     max_tries=(10 if os.environ.get("CITA_TEST") else None),
     on_backoff=log_backoff,
     logger=None,
@@ -775,7 +781,9 @@ def initial_page(driver: webdriver, context: CustomerProfile, fast_forward_url, 
     time.sleep(5)
 
     resp_text = body_text(driver)
-    if "INTERNET CITA PREVIA" not in resp_text:
+    
+    if "CITA PREVIA EXTRANJERÍA" not in resp_text:
+        print('entre en exeption')
         context.first_load = True
         raise TimeoutException
 

@@ -21,7 +21,7 @@ if __name__ == "__main__":
         # Offices in order of preference
         # This selects specified offices one by one or a random one if not found.
         # For recogida only the first specified office will be attempted or none
-        offices=[Office.BARCELONA_MALLORCA],
+        offices=[Office.BARCELONA_MALLORCA, Office.BADALONA],
     )
     if "--autofill" not in sys.argv:
         try_cita(context=customer, cycles=200)  # Try 200 times
